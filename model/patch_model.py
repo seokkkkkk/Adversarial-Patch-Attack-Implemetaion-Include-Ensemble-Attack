@@ -6,31 +6,26 @@ from ultralytics import YOLO
 from torch.utils.data import DataLoader, Dataset
 import time
 import matplotlib.pyplot as plt
-
-# device 설정
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
-    print("MPS를 사용합니다.")
-elif torch.cuda.is_available():
-    device = torch.device("cuda")
-    print("CUDA를 사용합니다.")
-else:
-    device = torch.device("cpu")
-    print("CPU를 사용합니다.")
-
+from random import sample
+from torchvision import transforms
 
 class ImageDataset(Dataset):
     def __init__(self, image_paths, resize_to=(416, 416)):
         self.image_paths = image_paths
         self.resize_to = resize_to
+        self.transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize(resize_to),
+            transforms.ToTensor()
+        ])
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, idx):
         image = cv.imread(self.image_paths[idx], cv.IMREAD_COLOR)  # BGR로 읽음
-        image = cv.resize(image, self.resize_to, interpolation=cv.INTER_AREA)  # 이미지를 resize_to 크기로 리사이즈
-        image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1) / 255.0  # [H, W, C] -> [C, H, W]
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        image = self.transform(image)
         return image
 
 
@@ -39,27 +34,6 @@ def load_model():
     model = YOLO('yolov8n.pt', verbose=False).to(device)
     print("모델 로드 완료")
     return model
-
-
-def load_images_from_directory(directory_path):
-    print(f"{directory_path} 에서 이미지 로드")
-    images = []
-    for filename in os.listdir(directory_path):
-        image_path = os.path.join(directory_path, filename)
-        image_temp = cv.imread(image_path)
-        if image_temp is None:
-            print(f"{image_path} 이미지 로드 실패")
-            continue
-        image_temp = cv.cvtColor(image_temp, cv.COLOR_BGR2RGB)
-        # 이미지 크기를 stride에 맞춰 조정
-        h, w, _ = image_temp.shape
-        new_h = (h // 32) * 32
-        new_w = (w // 32) * 32
-        image_temp = cv.resize(image_temp, (new_w, new_h))
-        image_temp = torch.tensor(image_temp, dtype=torch.float32).permute(2, 0, 1) / 255.0
-        images.append(image_temp)
-    print("이미지 로드 완료")
-    return images
 
 
 def init_optimizer(patch, lr):
@@ -210,9 +184,8 @@ def process_images(images, patch, model, patch_target, optimizer=None):
 
     # 이미지를 모델에 입력
     results = model(images, verbose=False)
-
-    # 손실 함수 계산
     loss = loss_function_for_yolo(patch_target, results)
+
     total_loss += loss.item()
 
     if optimizer:
@@ -224,8 +197,8 @@ def process_images(images, patch, model, patch_target, optimizer=None):
 
 
 def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_image_path, patch_target, lr, epochs,
-                   batch_size, save_path="patch/"):
-    
+                   batch_size, num_workers, save_path="patch/"):
+
     print("패치 최적화 시작")
 
     patch = patch_init(patch_image, patch_size, patch_shape)
@@ -237,11 +210,20 @@ def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_i
     train_image_paths = [os.path.join(train_image_path, f) for f in os.listdir(train_image_path)]
     val_image_paths = [os.path.join(val_image_path, f) for f in os.listdir(val_image_path)]
 
+    if len(train_image_paths) > 5000:
+        train_image_paths = sample(train_image_paths, 5000)
+    if len(val_image_paths) > 2000:
+        val_image_paths = sample(val_image_paths, 2000)
+
     train_dataset = ImageDataset(train_image_paths)
     val_dataset = ImageDataset(val_image_paths)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
+
+    # 이미지 개수 출력
+    print(f"Train Images: {len(train_dataset)}")
+    print(f"Validation Images: {len(val_dataset)}")
 
     best_loss = float('inf')
     train_losses = []
@@ -255,9 +237,7 @@ def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_i
         for images in train_loader:
             images = images.to(device)
             total_loss += process_images(images, patch, model, patch_target, optimizer)
-            # 10회 반복마다 출력
-            if index % 100 == 0:
-                print(f"Batch: {index + 1}/{len(train_loader)}")
+            print(f"Batch: {index + 1}/{len(train_loader)}")
             index += 1
         avg_loss = total_loss / len(train_loader)
         train_losses.append(avg_loss)
@@ -270,9 +250,7 @@ def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_i
             for images in val_loader:
                 images = images.to(device)
                 val_loss += process_images(images, patch, model, patch_target)
-                # 100회 반복마다 출력
-                if index % 100 == 0:
-                    print(f"Batch: {index + 1}/{len(train_loader)}")
+                print(f"Batch: {index + 1}/{len(val_loader)}")
                 index += 1
         avg_val_loss = val_loss / len(val_loader)
         val_losses.append(avg_val_loss)
@@ -288,27 +266,55 @@ def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_i
         # 남은 시간 예측 및 출력
         elapsed_time = time.time() - start_time
         remaining_time = (epochs - (epoch + 1)) * (elapsed_time / (epoch + 1))
-        print(f"현재 진행 시간: {elapsed_time} 분 / 남은 예상 시간: {remaining_time / 60:.2f} 분")
 
-    # 손실 시각화
-    plt.plot(train_losses, label='Training Loss')
-    plt.plot(val_losses, label='Validation Loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.title('Training and Validation Loss Over Epochs')
-    plt.show()
+        # 시간 출력 (일, 시, 분, 초)
+        days = remaining_time // (24 * 3600)
+        remaining_time = remaining_time % (24 * 3600)
+        hours = remaining_time // 3600
+        remaining_time %= 3600
+        minutes = remaining_time // 60
+        remaining_time %= 60
+        seconds = remaining_time
+
+        elapsed_minutes = int(elapsed_time // 60)
+        elapsed_seconds = int(elapsed_time % 60)
+
+        print(f"Elapsed Time: {elapsed_minutes}m {elapsed_seconds}s")
+        print(f"Remaining Time: {int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s")
+
+        # 손실 시각화
+        plt.plot(train_losses, label='Training Loss')
+        plt.plot(val_losses, label='Validation Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.title('Training and Validation Loss Over Epochs')
+        plt.show()
 
 
-# 예시 실행
-patch_images = "img.png"
-patch_size = 32
-patch_shape = "circle"
-train_image_path = "image/train/"
-val_image_path = "image/val/"
-patch_target = 0
-lr = 0.001
-epochs = 1000
-batch_size = 1
+if __name__ == '__main__':
 
-patch_optimize(patch_images, patch_size, patch_shape, train_image_path, val_image_path, patch_target, lr, epochs, batch_size)
+    # device 설정
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+        print("MPS 사용")
+    elif torch.cuda.is_available():
+        device = torch.device("cuda")
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # 사용하고자 하는 GPU의 번호로 설정
+        print("CUDA 사용")
+    else:
+        device = torch.device("cpu")
+        print("CPU 사용")
+
+    patch_images = "../patch_origin.png"
+    patch_size = 32
+    patch_shape = "circle"
+    train_image_path = "../image/train/"
+    val_image_path = "../image/val/"
+    patch_target = 0
+    lr = 0.001
+    epochs = 100
+    batch_size = 250
+    num_workers = 3
+
+    patch_optimize(patch_images, patch_size, patch_shape, train_image_path, val_image_path, patch_target, lr, epochs, batch_size, num_workers)
