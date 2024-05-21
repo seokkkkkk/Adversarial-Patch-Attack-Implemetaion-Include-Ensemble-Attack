@@ -222,8 +222,10 @@ def process_images(images, patch, model, patch_target, optimizer=None):
 
     return total_loss
 
+
 def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_image_path, patch_target, lr, epochs,
                    batch_size, save_path="patch/"):
+    
     print("패치 최적화 시작")
 
     patch = patch_init(patch_image, patch_size, patch_shape)
@@ -253,9 +255,9 @@ def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_i
         for images in train_loader:
             images = images.to(device)
             total_loss += process_images(images, patch, model, patch_target, optimizer)
-            # batch_size / 10 마다 손실 출력
-            if index % (batch_size // 10) == 0:
-                print(f"Epoch: {epoch + 1}/{epochs}, Batch process: {total_loss / len(train_loader)}")
+            # 10회 반복마다 출력
+            if index % 100 == 0:
+                print(f"Batch: {index + 1}/{len(train_loader)}")
             index += 1
         avg_loss = total_loss / len(train_loader)
         train_losses.append(avg_loss)
@@ -268,9 +270,9 @@ def patch_optimize(patch_image, patch_size, patch_shape, train_image_path, val_i
             for images in val_loader:
                 images = images.to(device)
                 val_loss += process_images(images, patch, model, patch_target)
-                print(f"Epoch: {epoch + 1}/{epochs}, Batch process: {val_loss / len(val_loader)}")
-                if index % (batch_size // 10) == 0:
-                    print(f"Epoch: {epoch + 1}/{epochs}, Batch process: {total_loss / len(train_loader)}")
+                # 100회 반복마다 출력
+                if index % 100 == 0:
+                    print(f"Batch: {index + 1}/{len(train_loader)}")
                 index += 1
         avg_val_loss = val_loss / len(val_loader)
         val_losses.append(avg_val_loss)
@@ -307,6 +309,6 @@ val_image_path = "image/val/"
 patch_target = 0
 lr = 0.001
 epochs = 1000
-batch_size = 512
+batch_size = 1
 
 patch_optimize(patch_images, patch_size, patch_shape, train_image_path, val_image_path, patch_target, lr, epochs, batch_size)
