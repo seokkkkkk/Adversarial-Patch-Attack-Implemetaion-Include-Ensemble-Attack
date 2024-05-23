@@ -13,21 +13,24 @@ def set_label(text, max_length):
 
 
 # 예측 차트 생성
-def prediction_chart(classes, probs, max_class_length=5):
-    classes = [set_label(cls, max_class_length) for cls in classes]
-
+def prediction_chart(classes, probs, max_length=5):
     fig, ax = plt.subplots(figsize=(6.67, 6.67))
     canvas = FigureCanvas(fig)
     y_pos = np.arange(len(classes))
 
-    ax.barh(y_pos, probs, align='center', height=0.5)
+    bars = ax.barh(y_pos, probs, align='center', height=0.5)
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(classes, rotation=0, ha='right', fontsize=10)
+    ax.set_yticklabels([])  # Remove y-axis labels
     ax.set_xticks([])
     ax.set_xlabel('Probability')
     ax.set_title('Top 5 Predictions')
 
     ax.set_xlim(0, 1)
+
+    # Adding text labels to bars
+    for bar, cls, prob in zip(bars, classes, probs):
+        ax.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height() / 2,
+                f'{cls}: {prob:.2f}', va='center', ha='left', fontsize=10, color='black')
 
     fig.tight_layout(pad=1.0)
     chart_image = convert_fig_to_image(canvas)
