@@ -10,10 +10,21 @@ def split_dataset(images_path, max_images):
     # images 배열에 넣기 전에 이미지가 유효한지 판단
     images = [os.path.join(images_path, image) for image in os.listdir(images_path) if
               image.endswith((".jpg", ".JPEG", ".png"))]
+    print("Before shuffle:", images[:10])  # 처음 10개만 출력
     np.random.shuffle(images)
+    print("After shuffle:", images[:10])  # 처음 10개만 출력
     images = images[:max_images] if len(images) > max_images else images
     train_split = int(len(images) * 0.8)
     return images[:train_split], images[train_split:]
+
+def return_path_to_images(images_path, max_images):
+    # 이미지 경로 반환
+    images = [os.path.join(images_path, image) for image in os.listdir(images_path) if
+              image.endswith((".jpg", ".JPEG", ".png"))]
+    np.random.shuffle(images)
+    images = images[:max_images] if len(images) > max_images else images
+    return images
+
 
 def preprocess_image(image_path, device):
     # 이미지 전처리

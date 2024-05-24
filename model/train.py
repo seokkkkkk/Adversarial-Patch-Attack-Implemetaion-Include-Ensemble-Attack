@@ -2,6 +2,7 @@ import torch
 import time
 from patch import apply_patch_to_image, random_transformation, transform_patch, save_patch
 from utils import training_log, plot_training_log
+import cv2 as cv
 
 
 def calculate_success(result, target_class):
@@ -22,6 +23,10 @@ def train(model, train_loader, target_class, device, initial_patch, optimizer):
         for image in images:
             image = image.unsqueeze(0)
             patch = initial_patch.clone()
+
+            angle, scale = random_transformation()
+
+            patch = transform_patch(patch, angle, scale, device)
 
             x = torch.randint(0, image.shape[2] - patch.shape[2], (1,), device=device).item()
             y = torch.randint(0, image.shape[3] - patch.shape[3], (1,), device=device).item()

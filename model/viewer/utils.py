@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
 
-
 # 길이를 고려하여 라벨 설정
 def set_label(text, prob, max_length=5):
     if "_" in text:
@@ -22,7 +21,6 @@ def set_label(text, prob, max_length=5):
 
     lines.append(f"{prob:.2f}")
     return "\n".join(lines)
-
 
 # 예측 차트 생성
 def prediction_chart(classes, probs, max_length=5):
@@ -54,7 +52,6 @@ def prediction_chart(classes, probs, max_length=5):
     chart_image = convert_fig_to_image(canvas)
     plt.close(fig)
     return chart_image
-
 
 # 이미지로 변환
 def convert_fig_to_image(canvas):

@@ -1,5 +1,6 @@
-import cv2 as cv
+import torch.nn.functional as F
 import numpy as np
+import cv2 as cv
 import torch
 import os
 
@@ -40,31 +41,43 @@ def transform_patch(patch, angle, scale, device):
     # 패치를 회전 및 크기 조정
     patch = patch.clone()
 
-    # 패치 이미지 numpy로 변환
-    with torch.no_grad():
-        patch_np = (patch.squeeze(0).permute(1, 2, 0).cpu().numpy() * 255.0).astype(np.uint8)
-    resized_patch = cv.resize(patch_np, None, fx=scale, fy=scale, interpolation=cv.INTER_AREA)
-    center = (resized_patch.shape[1] // 2, resized_patch.shape[0] // 2)
-    matrix = cv.getRotationMatrix2D(center, angle, 1.0)
-    transformed_patch_np = cv.warpAffine(resized_patch, matrix, (resized_patch.shape[1], resized_patch.shape[0]))
+    # 각도를 라디안으로 변환 및 Tensor로 변환
+    angle = -angle * torch.pi / 180  # 회전 각도를 시계 반대 방향으로 설정
+    angle = torch.tensor(angle, device=device)  # Tensor로 변환
 
-    # 패치 이미지 채널이 2차원인 경우 3차원으로 변경
-    if transformed_patch_np.ndim == 2:
-        transformed_patch_np = np.expand_dims(transformed_patch_np, axis=-1)
-    if transformed_patch_np.shape[2] == 1:
-        transformed_patch_np = np.repeat(transformed_patch_np, 3, axis=2)
+    # 크기 조정
+    grid = F.affine_grid(torch.tensor([[[scale, 0, 0], [0, scale, 0]]], device=device, dtype=torch.float), patch.size(), align_corners=True)
+    resized_patch = F.grid_sample(patch, grid, align_corners=True, mode='bilinear')
 
-    # 패치 이미지를 텐서로 변환 및 normalize
-    transformed_patch = torch.from_numpy(transformed_patch_np).permute(2, 0, 1).float() / 255.0
-    transformed_patch = transformed_patch.to(device)
-    transformed_patch = transformed_patch.unsqueeze(0)
+    # 패치를 패딩하여 크기 늘리기
+    padding = resized_patch.shape[2] // 2
+    resized_patch = F.pad(resized_patch, (padding, padding, padding, padding))
+
+    # 회전
+    theta = torch.tensor([[torch.cos(angle), -torch.sin(angle), 0], [torch.sin(angle), torch.cos(angle), 0]], device=device)
+    grid = F.affine_grid(theta.unsqueeze(0), resized_patch.size(), align_corners=True)
+    transformed_patch = F.grid_sample(resized_patch, grid, align_corners=True, mode='bilinear')
+
+    # 중앙에서 원하는 크기로 잘라내기
+    start = (transformed_patch.shape[2] - patch.shape[2]) // 2
+    transformed_patch = transformed_patch[:, :, start:start + patch.shape[2], start:start + patch.shape[3]]
 
     return transformed_patch
 
 def apply_patch_to_image(image, patch, x, y):
     # 이미지에 패치 적용
     patched_image = image.clone()
-    patched_image[:, :, x:x + patch.shape[2], y:y + patch.shape[3]] = patch
+
+    # 패치의 알파 채널 생성
+    patch_alpha = patch[:, 3, :, :] if patch.shape[1] == 4 else None
+    if patch_alpha is None:
+        patch_alpha = (patch.sum(dim=1) > 0).float()
+
+    # 이미지에 패치의 알파 채널 적용
+    for c in range(3):
+        patched_image[:, c, x:x + patch.shape[2], y:y + patch.shape[3]] = (
+                patch[:, c, :, :] * patch_alpha + patched_image[:, c, x:x + patch.shape[2], y:y + patch.shape[3]] * (1 - patch_alpha)
+        )
 
     return patched_image
 

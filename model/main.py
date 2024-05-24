@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 from ultralytics import YOLO
 from torch.utils.data import DataLoader
-from dataset import ImageDataset
+from dataset import CachedImageDataset as ImageDataset
 from patch import patch_init, save_patch
 from utils import split_dataset
 from train import train_patch
@@ -25,33 +25,32 @@ def main():
     print("Model 로딩 완료")
 
     # 초기 패치 및 학습 관련 설정
-    patch_size = 64
+    patch_size = 128
     patch_shape = "default"
-    custom_patch_path = "initial_custom_patch.png"
+    custom_patch_path = None
     patch_save_path = "patch/"
     initial_patch = patch_init(patch_size, patch_shape, device, custom_patch_path)
-    learning_rate = 0.001
+    learning_rate = 0.0001
 
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
-    epochs = 1000  # 학습 횟수 설정
-    target_class = 107   # 타겟 클래스 (다른 이미지들을 타겟 클래스로 인식하도록 설정) jellyfish: 107
+    epochs = 10000  # 학습 횟수 설정
+    target_class = 599   # 타겟 클래스 (다른 이미지들을 타겟 클래스로 인식하도록 설정) 599: honeycomb
     stop_threshold = 10
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
 
     # 데이터셋 분할
-    batch_size = 128  # 배치 사이즈 설정
-    max_images = batch_size * 1000  # 학습할 최대 이미지 수
-    images_path = "your/ image / path"  # 공격할 대상 이미지 경로
+    batch_size = 128  # 배치 사이즈 설정을 1로 변경
+    max_images = batch_size * 10000000  # 학습할 최대 이미지 수
+    images_path = "images/img"  # 공격할 대상 이미지 경로
     train_images, val_images = split_dataset(images_path, max_images)
 
     print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")
 
     # 데이터로더 설정
-    num_workers = 4
-    train_loader = DataLoader(ImageDataset(train_images, device), batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    val_loader = DataLoader(ImageDataset(val_images, device), batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    train_loader = DataLoader(ImageDataset(train_images, device), batch_size=batch_size, shuffle=True, num_workers=0)
+    val_loader = DataLoader(ImageDataset(val_images, device), batch_size=batch_size, shuffle=False, num_workers=0)
 
     print("학습 시작")
 
