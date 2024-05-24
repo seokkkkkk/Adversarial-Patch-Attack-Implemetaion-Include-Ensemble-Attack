@@ -7,9 +7,15 @@ from matplotlib import pyplot as plt
 
 def split_dataset(images_path, max_images):
     # 데이터셋 분할
-    # images 배열에 넣기 전에 이미지가 유효한지 판단
-    images = [os.path.join(images_path, image) for image in os.listdir(images_path) if
-              image.endswith((".jpg", ".JPEG", ".png"))]
+    images = []
+
+    print(f"Searching in: {images_path}")  # 경로 출력
+    images.extend(return_path_to_images(images_path))  # 이미지 경로 반환
+
+    print("Total images found:", len(images))  # 전체 이미지 수 출력
+    if len(images) == 0:
+        raise ValueError("No images found in the specified directories.")
+
     print("Before shuffle:", images[:10])  # 처음 10개만 출력
     np.random.shuffle(images)
     print("After shuffle:", images[:10])  # 처음 10개만 출력
@@ -17,12 +23,15 @@ def split_dataset(images_path, max_images):
     train_split = int(len(images) * 0.8)
     return images[:train_split], images[train_split:]
 
-def return_path_to_images(images_path, max_images):
+def return_path_to_images(images_path):
     # 이미지 경로 반환
-    images = [os.path.join(images_path, image) for image in os.listdir(images_path) if
-              image.endswith((".jpg", ".JPEG", ".png"))]
-    np.random.shuffle(images)
-    images = images[:max_images] if len(images) > max_images else images
+    images = []
+    for root, dirs, files in os.walk(images_path):
+        print(f"Current directory: {root}")  # 현재 디렉토리 출력
+        for file in files:
+            if file.endswith((".jpg", ".JPEG", ".png")):
+                images.append(os.path.join(root, file))
+                print(f"Found image: {os.path.join(root, file)}")  # 찾은 이미지 경로 출력
     return images
 
 
