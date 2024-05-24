@@ -16,7 +16,6 @@ def train(model, train_loader, target_class, device, initial_patch, optimizer):
     # 학습
     train_loss = 0
     train_success = 0
-    total_batches = len(train_loader)
     batch_progress = 0
     for batch_idx, images in enumerate(train_loader):
         images = images.to(device)

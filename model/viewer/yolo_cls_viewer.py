@@ -10,7 +10,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = YOLO('../yolov8n-cls.pt').to(device)
 
 # 입력 동영상 파일 경로
-input_video_path = 'input_video.mp4'
+input_video_path = "input_video.mp4"
 
 # 출력 동영상 파일 경로
 output_video_path = 'output_video.avi'
