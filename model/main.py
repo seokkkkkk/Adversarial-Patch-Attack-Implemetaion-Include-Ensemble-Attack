@@ -34,16 +34,16 @@ def main():
 
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
-    epochs = 500  # 학습 횟수 설정
+    epochs = 1000  # 학습 횟수 설정
     target_class = 107   # 타겟 클래스 (다른 이미지들을 타겟 클래스로 인식하도록 설정) jellyfish: 107
     stop_threshold = 10
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
 
     # 데이터셋 분할
-    batch_size = 64  # 배치 사이즈 설정
-    max_images = batch_size * 100  # 학습할 최대 이미지 수
-    images_path = "../datasets/imagenet/test"
+    batch_size = 128  # 배치 사이즈 설정
+    max_images = batch_size * 1000  # 학습할 최대 이미지 수
+    images_path = "your/ image / path"  # 공격할 대상 이미지 경로
     train_images, val_images = split_dataset(images_path, max_images)
 
     print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")

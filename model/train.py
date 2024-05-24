@@ -3,17 +3,21 @@ import time
 from patch import apply_patch_to_image, random_transformation, transform_patch, save_patch
 from utils import training_log, plot_training_log
 
+
 def calculate_success(result, target_class):
     # 성공률 계산 (타겟 클래스가 예측된 경우)
     top1_class = torch.argmax(result, dim=1)
     success = (top1_class == target_class).float().mean().item()
     return success
 
+
 def train(model, train_loader, target_class, device, initial_patch, optimizer):
+    print("[Train]")
     # 학습
     train_loss = 0
     train_success = 0
     total_batches = len(train_loader)
+    batch_progress = 0
     for batch_idx, images in enumerate(train_loader):
         images = images.to(device)
         for image in images:
@@ -40,20 +44,23 @@ def train(model, train_loader, target_class, device, initial_patch, optimizer):
             train_loss += loss.item()
             train_success += success
 
+            batch_progress += 1
+
         # 각 배치마다 진행 상황 표시
-        if (batch_idx + 1) % 100 == 0:
-            batch_progress = (batch_idx + 1) * total_batches
+        if (batch_idx + 1) % 10 == 0:
             print(f"[Batch] {batch_progress}/{len(train_loader.dataset)}")
 
     train_loss /= len(train_loader.dataset)
     train_success /= len(train_loader.dataset)
     return train_loss, train_success
 
+
 def val(model, val_loader, target_class, device, initial_patch):
+    print("[Validation]")
     # 검증
     val_loss = 0
     val_success = 0
-    total_batches = len(val_loader)
+    batch_progress = 0
     for batch_idx, images in enumerate(val_loader):
         images = images.to(device)
         for image in images:
@@ -73,16 +80,19 @@ def val(model, val_loader, target_class, device, initial_patch):
             val_loss += loss.item()
             val_success += success
 
+            batch_progress += 1
+
         # 각 배치마다 진행 상황 표시
-        if (batch_idx + 1) % 100 == 0:
-            batch_progress = (batch_idx + 1) * total_batches
+        if (batch_idx + 1) % 10 == 0:
             print(f"[Batch] {batch_progress}/{len(val_loader.dataset)}")
 
     val_loss /= len(val_loader.dataset)
     val_success /= len(val_loader.dataset)
     return val_loss, val_success
 
-def train_patch(model, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch, optimizer):
+
+def train_patch(model, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch,
+                optimizer):
     # 패치 학습
     best_val_loss = float("inf")
     best_val_epoch = 0
@@ -97,14 +107,16 @@ def train_patch(model, train_loader, val_loader, epochs, target_class, device, s
         with torch.no_grad():
             val_loss, val_success = val(model, val_loader, target_class, device, initial_patch)
 
-        print(f"[Epoch] {epoch + 1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Train Success: {train_success:.4f} - Val Success: {val_success:.4f}")
+        print(
+            f"[Epoch] {epoch + 1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Train Success: {train_success:.4f} - Val Success: {val_success:.4f}")
 
         training_log(epoch, epochs, train_loss, val_loss, train_success, val_success, "data/training_log.csv")
         plot_training_log("data/training_log.csv")
 
         elapsed_time = time.time() - start_time
         remaining_time = (elapsed_time / (epoch + 1)) * (epochs - (epoch + 1))
-        print(f"Elapsed Time: {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))} - Remaining Time: {time.strftime('%H:%M:%S', time.gmtime(remaining_time))}")
+        print(
+            f"Elapsed Time: {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))} - Remaining Time: {time.strftime('%H:%M:%S', time.gmtime(remaining_time))}")
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
