@@ -13,7 +13,9 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, idx):
         image_path = self.image_paths[idx]
-        image = cv.imread(image_path, cv.IMREAD_UNCHANGED)
+        image = cv.imread(image_path, cv.IMREAD_COLOR)
+        # bgr to rgb
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
         if image is None:
             raise ValueError(f"Failed to load image at path: {image_path}")

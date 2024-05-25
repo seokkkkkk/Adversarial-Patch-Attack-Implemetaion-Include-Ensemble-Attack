@@ -57,13 +57,14 @@ for filename in os.listdir(input_video_folder):
             frame = cv.resize(frame, image_size)
 
             # YOLOv8n-cls 모델 추론
-            results = model(frame)
+            results = model(frame, stream=True, verbose=False)
 
             # 상위 5개의 예측 클래스와 해당 확률을 추출
             probs = results[0].probs  # 확률 추출
             top5_indices = probs.top5  # 상위 5개의 인덱스
             top5_probs = probs.top5conf.to('cpu').numpy()  # 상위 5개의 확률
             top5_classes = [model.names[i] for i in top5_indices]  # 상위 5개의 클래스 이름
+
 
             # 예측 차트 생성
             chart_image = prediction_chart(top5_classes, top5_probs)

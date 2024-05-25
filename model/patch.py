@@ -7,8 +7,10 @@ import os
 def patch_init(patch_size, patch_shape, device, custom_patch_path=None):
     # 사용자 지정 패치 경로가 있을 경우 이미지 로드, 없을 경우 랜덤 패치 생성
     if custom_patch_path:
-        image = cv.imread(custom_patch_path, cv.IMREAD_UNCHANGED)
+        image = cv.imread(custom_patch_path, cv.IMREAD_COLOR)
         image = cv.resize(image, (patch_size, patch_size))
+        # BGR을 RGB로 변환
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
     else:
         image = np.random.randint(0, 255, (patch_size, patch_size, 3), dtype=np.uint8)
 
@@ -37,7 +39,7 @@ def save_patch(patch, name, save_path):
     cv.imwrite(os.path.join(save_path, f"{name}.png"), patch_np)
     print(f"Patch saved at {os.path.join(save_path, f'{name}.png')}")
 
-def transform_patch(patch, angle, scale, device):
+def transform_patch(patch, angle, scale, device, patch_shape):
     # 패치를 회전 및 크기 조정
     patch = patch.clone()
 
@@ -61,6 +63,15 @@ def transform_patch(patch, angle, scale, device):
     # 중앙에서 원하는 크기로 잘라내기
     start = (transformed_patch.shape[2] - patch.shape[2]) // 2
     transformed_patch = transformed_patch[:, :, start:start + patch.shape[2], start:start + patch.shape[3]]
+
+    if patch_shape == "circle":
+        mask = np.zeros((patch.shape[2], patch.shape[3]), dtype=np.uint8)
+        center = (patch.shape[2] // 2, patch.shape[3] // 2)
+        radius = patch.shape[2] // 2
+        cv.circle(mask, center, radius, 255, -1)
+        mask = torch.from_numpy(mask).float().to(device) / 255.0
+        mask = mask.unsqueeze(0).unsqueeze(0)
+        transformed_patch = transformed_patch * mask + (1 - mask) * 0  # 검정색으로 채움
 
     return transformed_patch
 

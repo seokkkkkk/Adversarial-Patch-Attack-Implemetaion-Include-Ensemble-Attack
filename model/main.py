@@ -20,7 +20,7 @@ def main():
     print("Device:", device)
 
     # 객체 분류 모델 설정
-    model = YOLO("yolov8n-cls.pt").to(device)
+    model = YOLO("yolov8s-cls.pt").to(device)
 
     print("Model 로딩 완료")
 
@@ -43,7 +43,7 @@ def main():
     # 데이터셋 분할
     batch_size = 300  # 배치 사이즈 설정을 1로 변경
     max_images = 50000  # 학습할 최대 이미지 수
-    images_path = "C:/Users/HOME/Desktop/imagenet/ILSVRC/Data/CLS-LOC/train/n07753592"  # 공격할 대상 이미지 경로
+    images_path = "C:/Users/HOME/Desktop/imagenet/ILSVRC/Data/CLS-LOC/train/banana"  # 공격할 대상 이미지 경로
     train_images, val_images = split_dataset(images_path, max_images)
 
     print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")
@@ -67,6 +67,7 @@ def main():
     cv.imshow("final_patch", patch_np)
     cv.waitKey(0)
     cv.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()

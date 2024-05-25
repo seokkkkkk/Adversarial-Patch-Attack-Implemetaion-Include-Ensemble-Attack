@@ -2,6 +2,7 @@ import torch
 import time
 from patch import apply_patch_to_image, random_transformation, transform_patch, save_patch
 from utils import training_log, plot_training_log
+import numpy as np
 import cv2 as cv
 
 
@@ -23,7 +24,7 @@ def train_step(model, images, target_class, device, patch, optimizer):
 
         # 랜덤 변환
         angle, scale = random_transformation()
-        transformed_patch = transform_patch(current_patch, angle, scale, device)
+        transformed_patch = transform_patch(current_patch, angle, scale, device, "default")
 
         # 랜덤 위치에 패치 적용
         x = torch.randint(0, image.shape[2] - transformed_patch.shape[2], (1,), device=device).item()
