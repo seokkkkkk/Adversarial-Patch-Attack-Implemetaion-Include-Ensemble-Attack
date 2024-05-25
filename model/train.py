@@ -32,8 +32,9 @@ def train_step(model, images, target_class, device, patch, optimizer):
 
         # 모델 예측
         result = model(patched_image, verbose=False)
-        target_prob = result[0].probs.data.unsqueeze(0)
-        loss = torch.nn.functional.cross_entropy(target_prob, torch.tensor([target_class], device=device))
+        log_probs = torch.log(result[0].probs.data)
+        target_prob = log_probs.unsqueeze(0)
+        loss = torch.nn.functional.nll_loss(target_prob, torch.tensor([target_class], device=device))
         success = calculate_success(target_prob, target_class)
 
         # 최적화
