@@ -180,8 +180,12 @@ if optimizer is not None:
       - target_class를 분류 목표 객체의 Imagenet Class Id를 입력합니다.
       - stop_threshold를 지정하면 모든 epochs를 수행하지 않고, 조기 종료합니다.
       - images_path는 훈련할 데이터가 있는 폴더를 지정합니다.
+  
+  
 - 생성된 적대적 패치 테스트: patch_tester.py 실행
       - image_path에 테스트를 위한 데이터셋 폴더를 지정합니다.
+
+  
 - 동영상에 대한 Top5 에측 확인: yolo_cls_viewer.py 실행
       - input_video_folder에 존재하는 동영상에 대해서 Top5 예측 차트를 포함한 동영상을 생성합니다.
 
