@@ -151,8 +151,8 @@ if optimizer is not None:
 - 패치 검증
     - 패치 생성 후 동일한 전처리 과정을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
         - Orange Patch(80 Pixel)
-            - 공격 성공률 : 89.40%
-        
+            - 공격 성공률 : 이미지 중 89.40%를 Orange로 분류하였습니다.
+                      
         ![output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/5d2fa52f-e5b0-4f5e-8571-ec95324ccbf7)
         
         - Toaster Patch(64 Pixel)
