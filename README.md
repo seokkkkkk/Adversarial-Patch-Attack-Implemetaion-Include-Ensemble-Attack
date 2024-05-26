@@ -132,7 +132,7 @@ if optimizer is not None:
 - OpenCV: 4.9.0
 - CUDA: 12.1
 - Ultralytics: 2.2.2
-    - 중요: ultralytics [predictor.py](http://predictor.py/)의 **`@smart_inference_mode()`**를 주석처리해야 합니다.
+    - 중요: ultralytics [predictor.py](http://predictor.py/)의 `@smart_inference_mode()`를 주석처리해야 합니다.
 - GPU: GTX 1060 6GB
 
 ## 기여
