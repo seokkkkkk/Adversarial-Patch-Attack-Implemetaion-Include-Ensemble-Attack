@@ -5,6 +5,10 @@ import cv2 as cv
 import torch
 from matplotlib import pyplot as plt
 
+
+train_batch_idx = 0
+val_batch_idx = 0
+
 def split_dataset(images, max_images):
     # 데이터셋 분할
     print("Total images found:", len(images))  # 전체 이미지 수 출력
@@ -109,11 +113,21 @@ def plot_training_log(batch_log_filename, epoch_log_filename):
     plt.show()
 
 
-def batch_training_log(epoch, batch_idx, num_batches, train_loss, val_loss, train_success, val_success, filename):
+def batch_training_log(mode, epoch, train_loss, val_loss, train_success, val_success, filename):
+    global train_batch_idx, val_batch_idx
+
+    if mode == 'train':
+        batch_idx = train_batch_idx
+        train_batch_idx += 1
+    elif mode == 'val':
+        batch_idx = val_batch_idx
+        val_batch_idx += 1
+    else:
+        raise ValueError("Invalid mode. Use 'train' or 'val'.")
+
     log_data = pd.DataFrame({
         'epoch': [epoch],
         'batch_idx': [batch_idx],
-        'num_batches': [num_batches],
         'train_loss': [train_loss],
         'val_loss': [val_loss],
         'train_success': [train_success],

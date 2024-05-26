@@ -32,6 +32,7 @@ def train_step(model, images, target_class, device, patch, optimizer):
     train_loss = 0
     train_success = 0
     batch_size = images.size(0)
+    image_length = 0
 
     for image in images:
         image_np = (image.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
@@ -65,11 +66,13 @@ def train_step(model, images, target_class, device, patch, optimizer):
             patch.data = torch.clamp(patch, 0, 1)
 
         # 10번 마다 이미지 출력
-        if (batch_size % 10) == 0:
+        if (image_length % 10) == 0:
             patched_image_np = (patched_image.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
             patched_image_np = cv.cvtColor(patched_image_np, cv.COLOR_RGB2BGR)
             cv.imshow("patched_image", patched_image_np)
             cv.waitKey(1)
+
+        image_length += 1
 
         train_loss += loss.item()
         train_success += success
@@ -94,8 +97,7 @@ def train(model, train_loader, target_class, device, initial_patch, optimizer, e
         # 각 배치마다 진행 상황 표시 및 로그 저장
         if (batch_idx + 1) % 2 == 0:
             print(f"[Batch] {batch_idx + 1}/{len(train_loader)} - Loss: {batch_loss:.4f} - Success: {batch_success:.4f}")
-            batch_training_log(epoch, batch_idx, len(train_loader), batch_loss, None, batch_success, None,
-                               "data/batch_training_log.csv")
+            batch_training_log('train', epoch, batch_loss, None, batch_success, None, "data/batch_training_log.csv")
 
     train_loss /= len(train_loader)
     train_success /= len(train_loader)
@@ -116,8 +118,7 @@ def val(model, val_loader, target_class, device, initial_patch, epoch, total_epo
         # 각 배치마다 진행 상황 표시 및 로그 저장
         if (batch_idx + 1) % 2 == 0:
             print(f"[Batch] {batch_idx + 1}/{len(val_loader)} - Loss: {batch_loss:.4f} - Success: {batch_success:.4f}")
-            batch_training_log(epoch, batch_idx, len(val_loader), None, batch_loss, None, batch_success,
-                               "data/batch_validation_log.csv")
+            batch_training_log('val', epoch, None, batch_loss, None, batch_success, "data/batch_validation_log.csv")
 
     val_loss /= len(val_loader)
     val_success /= len(val_loader)
