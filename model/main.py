@@ -25,7 +25,7 @@ def main():
     print("Model 로딩 완료")
 
     # 초기 패치 및 학습 관련 설정
-    patch_size = 100
+    patch_size = 50
     patch_shape = "default"
     custom_patch_path = None
     patch_save_path = "patch/"
@@ -35,14 +35,14 @@ def main():
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
     epochs = 1000  # 학습 횟수 설정
-    target_class = 950 # banana
+    target_class = 859 # banana
     stop_threshold = 20
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
 
     # 데이터셋 분할
     batch_size = 300  # 배치 사이즈 설정을 1로 변경
-    max_images = 50000  # 학습할 최대 이미지 수
+    max_images = 40000  # 학습할 최대 이미지 수
     images_path = "C:/Users/HOME/Desktop/imagenet/ILSVRC/Data/CLS-LOC/train/"  # 공격할 대상 이미지 경로
     train_images, val_images = split_dataset(return_path_to_images(images_path), max_images)
 

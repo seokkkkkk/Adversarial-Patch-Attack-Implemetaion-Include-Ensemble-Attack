@@ -3,7 +3,7 @@ import cv2 as cv
 import torch
 
 class ImageDataset(Dataset):
-    def __init__(self, image_paths, device, img_size=(1024, 1024)):
+    def __init__(self, image_paths, device, img_size=(224, 224)):
         self.image_paths = image_paths
         self.device = device
         self.img_size = img_size

@@ -57,25 +57,84 @@ def training_log(epoch, epochs, train_loss, val_loss, train_success, val_success
     with open(path, "a") as f:
         f.write(f"{epoch},{epochs},{train_loss},{val_loss},{train_success},{val_success}\n")
 
-def plot_training_log(path):
-    data = pd.read_csv(path)
-    plt.figure(figsize=(10, 5))
+def plot_training_log(batch_log_filename, epoch_log_filename):
+    batch_log_data = pd.read_csv(batch_log_filename)
+    epoch_log_data = pd.read_csv(epoch_log_filename)
 
-    ax1 = plt.gca()
-    ax1.set_xlabel("Epoch")
-    ax1.set_ylabel("Loss")
-    ax1.plot(data["epoch"], data["train_loss"], label="Train Loss", color="tab:blue")
-    ax1.plot(data["epoch"], data["val_loss"], label="Val Loss", color="tab:orange")
-    ax1.legend(loc="upper left")
-    ax1.grid()
+    epochs = epoch_log_data['epoch'].unique()
+    train_losses_epoch = epoch_log_data['train_loss'].values
+    val_losses_epoch = epoch_log_data['val_loss'].values
+    train_successes_epoch = epoch_log_data['train_success'].values
+    val_successes_epoch = epoch_log_data['val_success'].values
 
-    ax2 = ax1.twinx()
-    ax2.set_ylabel("Success Rate")
-    ax2.plot(data["epoch"], data["train_success"], label="Train Success Rate", color="tab:green")
-    ax2.plot(data["epoch"], data["val_success"], label="Val Success Rate", color="tab:red")
-    ax2.legend(loc="upper right")
+    plt.figure(figsize=(14, 10))
 
-    plt.title("Training and Validation Loss and Success Rate Over Epochs")
+    # Plotting Batch-Level Loss
+    plt.subplot(2, 2, 1)
+    plt.plot(batch_log_data['batch_idx'], batch_log_data['train_loss'], label='Train Loss (Batch)', marker='o')
+    plt.plot(batch_log_data['batch_idx'], batch_log_data['val_loss'], label='Validation Loss (Batch)', marker='o')
+    plt.xlabel('Batch Index')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss (Batch)')
+    plt.legend()
+
+    # Plotting Batch-Level Success Rate
+    plt.subplot(2, 2, 2)
+    plt.plot(batch_log_data['batch_idx'], batch_log_data['train_success'], label='Train Success (Batch)', marker='o')
+    plt.plot(batch_log_data['batch_idx'], batch_log_data['val_success'], label='Validation Success (Batch)', marker='o')
+    plt.xlabel('Batch Index')
+    plt.ylabel('Success Rate')
+    plt.title('Training and Validation Success Rate (Batch)')
+    plt.legend()
+
+    # Plotting Epoch-Level Loss
+    plt.subplot(2, 2, 3)
+    plt.plot(epochs, train_losses_epoch, label='Train Loss (Epoch)', marker='o')
+    plt.plot(epochs, val_losses_epoch, label='Validation Loss (Epoch)', marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss (Epoch)')
+    plt.legend()
+
+    # Plotting Epoch-Level Success Rate
+    plt.subplot(2, 2, 4)
+    plt.plot(epochs, train_successes_epoch, label='Train Success (Epoch)', marker='o')
+    plt.plot(epochs, val_successes_epoch, label='Validation Success (Epoch)', marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Success Rate')
+    plt.title('Training and Validation Success Rate (Epoch)')
+    plt.legend()
+
+    plt.tight_layout()
     plt.show()
-    plt.clf()  # 현재 플롯 지우기
-    plt.close()  # 현재 플롯 닫기
+
+
+def batch_training_log(epoch, batch_idx, num_batches, train_loss, val_loss, train_success, val_success, filename):
+    log_data = pd.DataFrame({
+        'epoch': [epoch],
+        'batch_idx': [batch_idx],
+        'num_batches': [num_batches],
+        'train_loss': [train_loss],
+        'val_loss': [val_loss],
+        'train_success': [train_success],
+        'val_success': [val_success]
+    })
+
+    if not os.path.isfile(filename):
+        log_data.to_csv(filename, index=False)
+    else:
+        log_data.to_csv(filename, mode='a', header=False, index=False)
+
+def epoch_training_log(epoch, train_loss, val_loss, train_success, val_success, filename):
+    log_data = pd.DataFrame({
+        'epoch': [epoch],
+        'train_loss': [train_loss],
+        'val_loss': [val_loss],
+        'train_success': [train_success],
+        'val_success': [val_success]
+    })
+
+    if not os.path.isfile(filename):
+        log_data.to_csv(filename, index=False)
+    else:
+        log_data.to_csv(filename, mode='a', header=False, index=False)
