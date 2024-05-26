@@ -29,7 +29,7 @@ def preprocess_image(image_np):
     return image_tensor
 
 
-def train_step(model, images, goal_class, target_class, device, patch, optimizer):
+def train_step(model, images, target_class, device, patch, optimizer):
     train_loss = 0
     train_success = 0
     batch_size = images.size(0)
@@ -49,25 +49,23 @@ def train_step(model, images, goal_class, target_class, device, patch, optimizer
         patched_image = apply_patch_to_image(image, transformed_patch, x, y)
 
         # 모델 예측
-        result = model(patched_image, verbose=True)
+        result = model(patched_image, verbose=False)
 
         log_probs = torch.log(result[0].probs.data)
-        goal_prob = log_probs.unsqueeze(0)
-        loss = torch.nn.functional.nll_loss(goal_prob, torch.tensor([goal_class], device=device))
-        success = calculate_success(goal_prob, goal_class)
+        target_prob = log_probs.unsqueeze(0)
+        loss = torch.nn.functional.nll_loss(target_prob, torch.tensor([target_class], device=device))
+        success = calculate_success(target_prob, target_class)
+
+        if optimizer is not None:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        # 패치 값을 0과 1 사이로 클리핑
+        with torch.no_grad():
+            patch.data = torch.clamp(patch, 0, 1)
 
         if result[0].probs.top1 == target_class:
-
-            if optimizer is not None:
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-            # 패치 값을 0과 1 사이로 클리핑
-            with torch.no_grad():
-                patch.data = torch.clamp(patch, 0, 1)
-
-        elif result[0].probs.top1 == goal_class:
             # 이미지 imshow
             patched_image_np = (patched_image.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
             patched_image_np = cv.cvtColor(patched_image_np, cv.COLOR_RGB2BGR)
@@ -83,14 +81,14 @@ def train_step(model, images, goal_class, target_class, device, patch, optimizer
     return train_loss, train_success
 
 
-def train(model, train_loader, goal_class, target_class, device, initial_patch, optimizer):
+def train(model, train_loader, target_class, device, initial_patch, optimizer):
     print("[Train]")
     train_loss = 0
     train_success = 0
 
     for batch_idx, images in enumerate(train_loader):
         images = images.to(device)
-        batch_loss, batch_success = train_step(model, images, goal_class, target_class, device, initial_patch, optimizer)
+        batch_loss, batch_success = train_step(model, images, target_class, device, initial_patch, optimizer)
         train_loss += batch_loss
         train_success += batch_success
 
@@ -104,15 +102,14 @@ def train(model, train_loader, goal_class, target_class, device, initial_patch, 
     return train_loss, train_success
 
 
-def val(model, val_loader, goal_class, target_class, device, initial_patch):
+def val(model, val_loader, target_class, device, initial_patch):
     print("[Validation]")
     val_loss = 0
     val_success = 0
 
     for batch_idx, images in enumerate(val_loader):
         images = images.to(device)
-        batch_loss, batch_success = train_step(model, images, goal_class, target_class, device, initial_patch,
-                                               None)  # optimizer 없이 수행
+        batch_loss, batch_success = train_step(model, images, target_class, device, initial_patch, None)  # optimizer 없이 수행
         val_loss += batch_loss
         val_success += batch_success
 
@@ -125,7 +122,7 @@ def val(model, val_loader, goal_class, target_class, device, initial_patch):
     return val_loss, val_success
 
 
-def train_patch(model, train_loader, val_loader, epochs, goal_class, target_class, device, stop_threshold, initial_patch,
+def train_patch(model, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch,
                 optimizer):
     # 패치 학습
     best_val_loss = float("inf")
@@ -136,10 +133,10 @@ def train_patch(model, train_loader, val_loader, epochs, goal_class, target_clas
 
     for epoch in range(epochs):
         print(f"{'=' * 20} Epoch {epoch + 1}/{epochs} {'=' * 20}")
-        train_loss, train_success = train(model, train_loader, goal_class, target_class, device, initial_patch, optimizer)
+        train_loss, train_success = train(model, train_loader, target_class, device, initial_patch, optimizer)
 
         with torch.no_grad():
-            val_loss, val_success = val(model, val_loader, goal_class, target_class, device, initial_patch)
+            val_loss, val_success = val(model, val_loader, target_class, device, initial_patch)
 
         print(
             f"[Epoch] {epoch + 1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Train Success: {train_success:.4f} - Val Success: {val_success:.4f}")

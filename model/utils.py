@@ -5,13 +5,8 @@ import cv2 as cv
 import torch
 from matplotlib import pyplot as plt
 
-def split_dataset(images_path, max_images):
+def split_dataset(images, max_images):
     # 데이터셋 분할
-    images = []
-
-    print(f"Searching in: {images_path}")  # 경로 출력
-    images.extend(return_path_to_images(images_path))  # 이미지 경로 반환
-
     print("Total images found:", len(images))  # 전체 이미지 수 출력
     if len(images) == 0:
         raise ValueError("No images found in the specified directories.")
