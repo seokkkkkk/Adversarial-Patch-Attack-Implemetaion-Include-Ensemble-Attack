@@ -3,9 +3,9 @@ import cv2 as cv
 import numpy as np
 from ultralytics import YOLO
 from torch.utils.data import DataLoader
-from dataset import CachedImageDataset as ImageDataset
+from dataset import ImageDataset
 from patch import patch_init, save_patch
-from utils import split_dataset
+from utils import split_dataset, return_path_to_images
 from train import train_patch
 
 def main():
@@ -20,31 +20,31 @@ def main():
     print("Device:", device)
 
     # 객체 분류 모델 설정
-    model = YOLO("yolov8n-cls.pt").to(device)
+    model = YOLO("yolov8s-cls.pt").to(device)
 
     print("Model 로딩 완료")
 
     # 초기 패치 및 학습 관련 설정
-    patch_size = 128
+    patch_size = 50
     patch_shape = "default"
     custom_patch_path = None
     patch_save_path = "patch/"
     initial_patch = patch_init(patch_size, patch_shape, device, custom_patch_path)
-    learning_rate = 0.0001
+    learning_rate = 0.001
 
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
-    epochs = 10000  # 학습 횟수 설정
-    target_class = 599   # 타겟 클래스 (다른 이미지들을 타겟 클래스로 인식하도록 설정) 599: honeycomb
-    stop_threshold = 10
+    epochs = 1000  # 학습 횟수 설정
+    target_class = 859 # banana
+    stop_threshold = 20
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
 
     # 데이터셋 분할
-    batch_size = 128  # 배치 사이즈 설정을 1로 변경
-    max_images = batch_size * 10000000  # 학습할 최대 이미지 수
-    images_path = "images/img"  # 공격할 대상 이미지 경로
-    train_images, val_images = split_dataset(images_path, max_images)
+    batch_size = 300  # 배치 사이즈 설정을 1로 변경
+    max_images = 40000  # 학습할 최대 이미지 수
+    images_path = "C:/Users/HOME/Desktop/imagenet/ILSVRC/Data/CLS-LOC/train/"  # 공격할 대상 이미지 경로
+    train_images, val_images = split_dataset(return_path_to_images(images_path), max_images)
 
     print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")
 
@@ -62,11 +62,17 @@ def main():
     # 최종 패치 저장
     save_patch(best_patch, "final_patch", patch_save_path)
 
+    # 저장한 패치와 best_patch 비교
+    patch = cv.imread("patch/final_patch.png")
+    diff = cv.subtract(patch, best_patch.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0)
+    cv.imshow("diff", diff)
+
     # 최종 패치 imshow
     patch_np = (best_patch.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
     cv.imshow("final_patch", patch_np)
     cv.waitKey(0)
     cv.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()
