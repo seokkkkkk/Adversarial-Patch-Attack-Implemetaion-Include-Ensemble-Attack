@@ -120,9 +120,43 @@ if optimizer is not None:
 
 - Adam 옵티마이저를 사용하여 패치를 업데이트합니다.
 
-## 실험 결과
+## 실험
 
-- 작성예정
+- 패치 생성
+    - Imagenet Dataset의 train 이미지 중 40,000장을 랜덤으로 선택하여 8:2 비율로 train set과 validation set을 구성하였습니다.
+    - Orange Patch의 크기는 80 픽셀, Toaster Patch의 크기는 64 픽셀로 실험하였으며, 이미지를 합성할 때 랜덤으로 0.7배에서 1.2배까지 크기를 조절하고, 0도, 90도, 180도, 270도로 랜덤 회전시켰습니다.
+    - 이미지의 크기는 224 픽셀로, 패치와 합성한 후 Tensor로 변환하여 모델에 입력하였습니다.
+- 학습 과정
+    - 다음은 학습 과정을 시각화한 자료입니다.
+        - 학습 과정 차트
+        - 패치가 업데이트 되며 이미지에 합성되는 모습
+        
+       ![ezgif-6-2dc68b71b6](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/4fe7eedb-6848-46d7-8106-e978425e81d7)
+
+
+        - 패치가 업데이트 되는 모습
+            - Orange Patch
+                
+                ![patch](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/30918e5c-d03a-4408-ac69-6647ed40079d)
+
+            - Toaster Patch
+            
+        - 완성된 패치
+            - Orange Patch
+                
+                ![49](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/91308919-8fe7-4384-8f9c-3fed4b0c8b6e)
+
+            - Toaster Patch
+            
+- 패치 검증
+    - 패치 생성 후 동일한 전처리 과정을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
+        - Orange Patch(80 Pixel)
+            - 공격 성공률 : 89.40%
+        
+        ![output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/5d2fa52f-e5b0-4f5e-8571-ec95324ccbf7)
+        
+        - Toaster Patch(64 Pixel)
+            - 공격 성공률 :
 
 ## **실험 환경**
 
