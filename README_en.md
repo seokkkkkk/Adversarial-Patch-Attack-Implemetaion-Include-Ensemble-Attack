@@ -1,6 +1,6 @@
 
 # Adversarial Patch
-
+[Korean](./README.md)
 ## Introduction
 
 Adversarial Patch is an attack technique on object recognition models, first introduced in the 2017 paper “Adversarial Patch” by Tom B. Brown, Dandelion Mané, Aurko Roy, Martín Abadi, and Justin Gilmer. This technique involves inserting a patch into a specific part of an image, causing the object recognition model to either fail to recognize the object or misclassify it as a different object.
