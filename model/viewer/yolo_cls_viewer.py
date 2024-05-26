@@ -8,7 +8,7 @@ import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # YOLOv8n-cls 모델 로드
-model = YOLO('../yolov8n-cls.pt').to(device)
+model = YOLO('../yolov8s-cls.pt').to(device)
 
 # 입력 동영상 폴더 경로
 input_video_folder = "video"
@@ -22,10 +22,11 @@ if not os.path.exists(output_video_folder):
 
 # 이미지 사이즈
 image_size = (640, 640)
+tensor_image_size = (224, 224)
 
 # 입력 동영상 폴더 내의 모든 동영상 파일 처리
 for filename in os.listdir(input_video_folder):
-    if filename.endswith('.mp4') or filename.endswith('.avi'):
+    if filename.endswith('.mp4') or filename.endswith('.avi') or filename.endswith('.mov') or filename.endswith('.MOV'):
         input_video_path = os.path.join(input_video_folder, filename)
         output_video_path = os.path.join(output_video_folder, f"{os.path.splitext(filename)[0]}_output.avi")
 
@@ -56,15 +57,18 @@ for filename in os.listdir(input_video_folder):
             # 이미지 크기 조정
             frame = cv.resize(frame, image_size)
 
+            tensor_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            tensor_frame = cv.resize(tensor_frame, tensor_image_size)
+            tensor_frame = torch.tensor(tensor_frame).float().permute(2, 0, 1).unsqueeze(0).to(device) / 255.0
+
             # YOLOv8n-cls 모델 추론
-            results = model(frame, stream=True, verbose=False)
+            results = model(tensor_frame)
 
             # 상위 5개의 예측 클래스와 해당 확률을 추출
             probs = results[0].probs  # 확률 추출
             top5_indices = probs.top5  # 상위 5개의 인덱스
             top5_probs = probs.top5conf.to('cpu').numpy()  # 상위 5개의 확률
             top5_classes = [model.names[i] for i in top5_indices]  # 상위 5개의 클래스 이름
-
 
             # 예측 차트 생성
             chart_image = prediction_chart(top5_classes, top5_probs)
