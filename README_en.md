@@ -170,6 +170,23 @@ To prove that the adversarial patch created based on the paper is effective in t
 - These experimental results indicate that adversarial patches can pose a threat in the real world. Developing robustness and defense techniques against such adversarial examples is considered important.
 
 
+## How to execute
+- Create Adversarial Patches: Run main.py
+    - You can adjust the size of the patch by adjusting the patch_size variable.
+    - patch_shapes is currently implemented only default (square).
+    - If you insert the desired image in custom_patch_path, it is used as an initial patch.
+    - You can adjust the learning rate using the learning_rate variable.
+    - You can adjust the number of learning progresses through the epochs variable.
+    - Classify target_class Enter the Imagine Class Id of the target object.
+    - If stop_threshold is specified, all epochs are not performed and prematurely shut down.
+    - images_path specifies the folder where the data to train is located.
+
+- Test created hostile patches: run patch_tester.py
+    - In image_path, specify the dataset folder for testing.
+
+- Check Top5 for video: run yolo_cls_viewer.py
+    - Create a video containing the Top5 prediction chart for videos that exist in input_video_folder.
+
 ## **Experimental Environment**
 
 - Python: 3.9.19
