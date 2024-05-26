@@ -4,6 +4,8 @@
 
 적대적 패치는 2017년 Tom B. Brown, Dandelion Mané, Aurko Roy, Martín Abadi, Justin Gilmer 등의 논문 “Adversarial Patch”에서 처음 소개된 객체 인식 모델 공격 기법입니다. 이 기법은 이미지의 특정 부분에 패치를 삽입하여 객체 인식 모델이 객체를 인식하지 못하거나 다른 객체로 인식하도록 만듭니다.
 
+기존의 적대적 예제들은 이미지에 미세한 노이즈를 삽입하여 공격하는 Perturbation 기법을 사용했습니다. 이러한 기법은 각 이미지 별로 적대적 예제를 생성해야하는 한계가 있었습니다. 그러나 적대적 패치는 하나의 패치로 여러 이미지나 현실 세계의 물체들에 대한 공격까지 수행할 수 있다는 점에서 차별점을 갖습니다.
+
 ## 수식 설명
 <img width="451" alt="Untitled" src="https://github.com/seokkkkkk/yolov8n-cls_adversarial_patch/assets/66684504/754a20ac-9905-4b2d-94d8-fb0293deb6d5">
 
@@ -157,6 +159,12 @@ if optimizer is not None:
         
         - Toaster Patch(64 Pixel)
             - 공격 성공률 :
+
+## 실제 적용
+논문을 기반으로 프로젝트를 진행하여 생성한 적대적 패치가 현실 세계에서도 유효하며, 스케일 및 왜곡에 대한 강건성이 있음을 증명하기 위해 Orange로 인식되도록 훈련된 패치를 다양한 사이즈로 출력하여 테스트를 진행하였습니다.
+![IMG_5999_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/b45cb7ce-f876-4130-8d1f-c23f74773378)
+![IMG_5992_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/db62f264-8496-4413-ad2c-6b96b027d633)
+- 다양한 크기와 각도로 출력된 패치를 실제 사물에 부착하여 테스트한 결과, 모델은 높은 확률로 패치가 부착된 사물을 'Orange'로 인식했습니다. 이는 적대적 패치가 디지털 환경뿐만 아니라 실제 환경에서도 효과적임을 보여줍니다.
 
 ## **실험 환경**
 
