@@ -3,7 +3,7 @@ import cv2 as cv
 import torch
 
 class ImageDataset(Dataset):
-    def __init__(self, image_paths, device, img_size=(640, 640)):
+    def __init__(self, image_paths, device, img_size=(1024, 1024)):
         self.image_paths = image_paths
         self.device = device
         self.img_size = img_size
@@ -17,6 +17,8 @@ class ImageDataset(Dataset):
         # bgr to rgb
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
+        image = image / 255.0
+
         if image is None:
             raise ValueError(f"Failed to load image at path: {image_path}")
 
@@ -26,7 +28,7 @@ class ImageDataset(Dataset):
             image = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
 
         image = cv.resize(image, self.img_size)
-        image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
-        image = image.to(self.device)
+
+        image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1).unsqueeze(0).to(self.device)
 
         return image

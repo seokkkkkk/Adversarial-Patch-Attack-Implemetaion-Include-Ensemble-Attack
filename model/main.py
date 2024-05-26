@@ -25,7 +25,7 @@ def main():
     print("Model 로딩 완료")
 
     # 초기 패치 및 학습 관련 설정
-    patch_size = 256
+    patch_size = 100
     patch_shape = "default"
     custom_patch_path = None
     patch_save_path = "patch/"
@@ -35,8 +35,9 @@ def main():
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
     epochs = 1000  # 학습 횟수 설정
-    target_class = 950   # 타겟 클래스 950 : orange
-    stop_threshold = 10
+    target_class = 954 # banana
+    goal_class = 950 # orange
+    stop_threshold = 20
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
 
@@ -55,12 +56,17 @@ def main():
     print("학습 시작")
 
     # 패치 생성
-    best_patch = train_patch(model, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch, optimizer)
+    best_patch = train_patch(model, train_loader, val_loader, epochs, goal_class, target_class, device, stop_threshold, initial_patch, optimizer)
 
     print("학습 완료")
 
     # 최종 패치 저장
     save_patch(best_patch, "final_patch", patch_save_path)
+
+    # 저장한 패치와 best_patch 비교
+    patch = cv.imread("patch/final_patch.png")
+    diff = cv.subtract(patch, best_patch.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0)
+    cv.imshow("diff", diff)
 
     # 최종 패치 imshow
     patch_np = (best_patch.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
