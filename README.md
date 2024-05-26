@@ -169,6 +169,22 @@ if optimizer is not None:
 - 다양한 크기와 각도로 출력된 패치를 실제 사물에 부착하여 테스트한 결과, 모델은 높은 확률로 패치가 부착된 사물을 'Orange'로 인식했습니다. 이는 적대적 패치가 디지털 환경뿐만 아니라 실제 환경에서도 효과적임을 보여줍니다.
 - 이 실험 결과는, 적대적 패치가 현실 세계에도 위협을 초래할 수 있다는 것을 나타내고 있습니다. 이러한 적대적 예제에 대한 강건성 및 방어 기법의 개발이 중요할 것으로 보입니다.
 
+
+## 실행 방법
+- 적대적 패치 생성: main.py 실행
+      - patch_size 변수를 조절하여 패치의 사이즈를 조절할 수 있습니다.
+      - patch_shapes는 현재 default(사각형)만 구현되었습니다.
+      - custom_patch_path에 원하는 이미지를 삽입하면, initial patch로 사용됩니다.
+      - learning_rate 변수를 통해 학습률을 조정할 수 있습니다.
+      - epochs 변수를 통해 학습 진행 횟수를 조절할 수 있습니다.
+      - target_class를 분류 목표 객체의 Imagenet Class Id를 입력합니다.
+      - stop_threshold를 지정하면 모든 epochs를 수행하지 않고, 조기 종료합니다.
+      - images_path는 훈련할 데이터가 있는 폴더를 지정합니다.
+- 생성된 적대적 패치 테스트: patch_tester.py 실행
+      - image_path에 테스트를 위한 데이터셋 폴더를 지정합니다.
+- 동영상에 대한 Top5 에측 확인: yolo_cls_viewer.py 실행
+      - input_video_folder에 존재하는 동영상에 대해서 Top5 예측 차트를 포함한 동영상을 생성합니다.
+
 ## **실험 환경**
 
 - Python: 3.9.19
