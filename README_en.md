@@ -25,7 +25,9 @@ Previous adversarial examples used the Perturbation technique, which attacks ima
 
 # Project Introduction
 
-This project is based on the Adversarial Patch paper, implementing key equations into code and performing adversarial attacks on a pre-trained YOLOv8s-cls single model using the ImageNet dataset. Implemented using the Pytorch framework, **the purpose of this project is to evaluate how robust and preventive measures the latest image classification models released in 2023 have against these attacks, six years after the 2017 paper was published.**
+This project is based on the Adversarial Patch paper, implementing key equations into code and performing adversarial attacks on a pre-trained YOLOv8s-cls single model using the ImageNet dataset.
+
+Implemented using the Pytorch framework, **the purpose of this project is to evaluate how robust and preventive measures the latest image classification models released in 2023 have against these attacks, six years after the 2017 paper was published.**
 
 To achieve this, I **wrote code to generate patches that induce input images to be classified into specific classes**, and also wrote code for **testing** and **real-world application testing**. Using the YOLOv8s-cls model and the ImageNet dataset, I trained the patches and ultimately aimed to verify their effectiveness **even in the real world**.
 

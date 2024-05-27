@@ -27,7 +27,7 @@ def main():
     # 초기 패치 및 학습 관련 설정
     patch_size = 50
     patch_shape = "default"
-    custom_patch_path = None
+    custom_patch_path = None # 필요한 경우 "path/to/custom/patch.png"
     patch_save_path = "patch/"
     initial_patch = patch_init(patch_size, patch_shape, device, custom_patch_path)
     learning_rate = 0.001
@@ -35,7 +35,7 @@ def main():
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
     epochs = 1000  # 학습 횟수 설정
-    target_class = 859 # banana
+    target_class = 859 # 공격 target class 설정
     stop_threshold = 20
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
@@ -43,7 +43,7 @@ def main():
     # 데이터셋 분할
     batch_size = 300  # 배치 사이즈 설정을 1로 변경
     max_images = 40000  # 학습할 최대 이미지 수
-    images_path = "C:/Users/HOME/Desktop/imagenet/ILSVRC/Data/CLS-LOC/train/"  # 공격할 대상 이미지 경로
+    images_path = "images/path/to/attack"  # 공격할 대상 이미지 경로
     train_images, val_images = split_dataset(return_path_to_images(images_path), max_images)
 
     print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")

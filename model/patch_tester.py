@@ -5,7 +5,7 @@ import dataset
 import numpy as np
 import cv2 as cv
 import torch
-import os
+
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -15,8 +15,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # YOLOv8n-cls 모델 로드
 model = ultralytics.YOLO("yolov8s-cls.pt").to(device)
 
-# 이미지 폴더 경로
-image_path = "C:/Users/HOME/Desktop/imagenet/ILSVRC/Data/CLS-LOC/test/"
+# 테스트 Dataset 폴더 경로
+image_path = "test/image/path"
 
 image_path = utils.return_path_to_images(image_path)
 

@@ -73,7 +73,7 @@ def plot_training_log(batch_log_filename, epoch_log_filename):
 
     plt.figure(figsize=(14, 10))
 
-    # Plotting Batch-Level Loss
+    # 배치 loss plot
     plt.subplot(2, 2, 1)
     plt.plot(batch_log_data['batch_idx'], batch_log_data['train_loss'], label='Train Loss (Batch)', marker='o')
     plt.plot(batch_log_data['batch_idx'], batch_log_data['val_loss'], label='Validation Loss (Batch)', marker='o')
@@ -82,7 +82,7 @@ def plot_training_log(batch_log_filename, epoch_log_filename):
     plt.title('Training and Validation Loss (Batch)')
     plt.legend()
 
-    # Plotting Batch-Level Success Rate
+    # 배치 성공률 plot
     plt.subplot(2, 2, 2)
     plt.plot(batch_log_data['batch_idx'], batch_log_data['train_success'], label='Train Success (Batch)', marker='o')
     plt.plot(batch_log_data['batch_idx'], batch_log_data['val_success'], label='Validation Success (Batch)', marker='o')
@@ -91,7 +91,7 @@ def plot_training_log(batch_log_filename, epoch_log_filename):
     plt.title('Training and Validation Success Rate (Batch)')
     plt.legend()
 
-    # Plotting Epoch-Level Loss
+    # 에포크 loss plot
     plt.subplot(2, 2, 3)
     plt.plot(epochs, train_losses_epoch, label='Train Loss (Epoch)', marker='o')
     plt.plot(epochs, val_losses_epoch, label='Validation Loss (Epoch)', marker='o')
@@ -100,7 +100,7 @@ def plot_training_log(batch_log_filename, epoch_log_filename):
     plt.title('Training and Validation Loss (Epoch)')
     plt.legend()
 
-    # Plotting Epoch-Level Success Rate
+    # 에포크 성공률 plot
     plt.subplot(2, 2, 4)
     plt.plot(epochs, train_successes_epoch, label='Train Success (Epoch)', marker='o')
     plt.plot(epochs, val_successes_epoch, label='Validation Success (Epoch)', marker='o')
