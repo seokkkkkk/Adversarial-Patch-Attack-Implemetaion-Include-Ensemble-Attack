@@ -153,7 +153,7 @@ if optimizer is not None:
 
             - Toaster Patch
                      
-- 패치 검증
+## 패치 검증
 
 **다음의 과정은 patch_tester.py에서 직접 수행할 수 있습니다.**    
     
