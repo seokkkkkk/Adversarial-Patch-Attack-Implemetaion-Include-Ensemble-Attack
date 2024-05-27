@@ -16,14 +16,14 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = ultralytics.YOLO("yolov8s-cls.pt").to(device)
 
 # 테스트 Dataset 폴더 경로
-image_path = "test/image/path"
+image_path = "C:\\Users\\HOME\\Desktop\\imagenet\\ILSVRC\\Data\\CLS-LOC\\test"
 
 image_path = utils.return_path_to_images(image_path)
 
 # 이미지 폴더 내의 모든 이미지 파일 처리
 test_loader = DataLoader(dataset.ImageDataset(image_path, device), batch_size=1, shuffle=False, num_workers=0)
 
-test_patch = patch.patch_init(80, "default", device, "C:\\Users\\HOME\\IdeaProjects\\adversarial_patch\\model\\patch\\1\\49.png")
+test_patch = patch.patch_init(64, "default", device, "C:\\Users\\HOME\\IdeaProjects\\adversarial_patch\\model\\patch\\16.png")
 
 total_length = 0
 
@@ -62,6 +62,6 @@ for images in test_loader:
         results = model(patched_image, verbose=False)
         top1_class = results[0].probs.top1
         total_length += 1
-        if top1_class == 950:
+        if top1_class == 859:
             results_correct += 1
         print(f"Current correct rate: {results_correct / total_length * 100:.2f}% Current Images: {total_length}")
