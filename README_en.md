@@ -93,6 +93,9 @@ def train_step(model, images, target_class, device, patch, optimizer):
     return train_loss, train_success
 ```
 
+- A block of codes related to preprocessing, patch transformation and application of images among the entire code, and model inference.
+- More detailed explanations are below.
+
 ### Transformation and Application
 
 ```python
@@ -149,33 +152,217 @@ if optimizer is not None:
               ![patch](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/30918e5c-d03a-4408-ac69-6647ed40079d)
               
             - Toaster Patch
-         
+
+              ![ezgif-1-21f4f5cdce](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/89d897b4-aec9-4e16-a127-7e5b51b14377)
+
         - Completed Patch
             - Orange Patch
                 
                 ![49](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/91308919-8fe7-4384-8f9c-3fed4b0c8b6e)
 
             - Toaster Patch
+
+              ![16](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/60cd8ce1-7646-41f5-95de-1826c3718a1c)
             
-- Patch Verification
-    - After creating the patch, the same preprocessing process was applied, and tests were conducted on 99,999 images of the Imagenet Dataset test images.
-        - Orange Patch(80 Pixel)
-            - Attack success rate: Classified 89.40% of images as Orange.
-                      
-        ![output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/5d2fa52f-e5b0-4f5e-8571-ec95324ccbf7)
-        
-        - Toaster Patch(64 Pixel)
-            - Attack success rate:
+##Patch Verification
+
+**The following process can be done directly from patch_tester.py.**
+
+```python
+import patch
+import utils
+import ultralytics
+import dataset
+import numpy as np
+import cv2 as cv
+import torch
+
+from torch.utils.data import DataLoader
+from torchvision import transforms
+
+# device 설정
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# YOLOv8n-cls 모델 로드
+model = ultralytics.YOLO("yolov8s-cls.pt").to(device)
+
+# 테스트 Dataset 폴더 경로
+image_path = "C:\\Users\\HOME\\Desktop\\imagenet\\ILSVRC\\Data\\CLS-LOC\\test"
+
+image_path = utils.return_path_to_images(image_path)
+
+# 이미지 폴더 내의 모든 이미지 파일 처리
+test_loader = DataLoader(dataset.ImageDataset(image_path, device), batch_size=1, shuffle=False, num_workers=0)
+
+test_patch = patch.patch_init(64, "default", device, "C:\\Users\\HOME\\IdeaProjects\\adversarial_patch\\model\\patch\\16.png")
+
+total_length = 0
+
+results_correct = 0
+
+transform_pipeline = transforms.Compose([
+    transforms.ToPILImage(),  # NumPy 배열을 PIL 이미지로 변환
+    transforms.RandomResizedCrop(size=(224, 224), scale=(0.8, 1.0)),  # 랜덤 확대/축소 및 크롭
+    transforms.ToTensor(),  # PIL 이미지를 텐서로 변환
+])
+
+
+def preprocess_image(image_np):
+    # NumPy 배열을 변환 파이프라인을 사용하여 변환
+    image_tensor = transform_pipeline(image_np)
+    return image_tensor
+
+for images in test_loader:
+    for image in images:
+        image_np = (image.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
+        image = preprocess_image(image_np).unsqueeze(0).to(device)
+
+        angle, scale = patch.random_transformation()
+        test_patch_transformed = patch.transform_patch(test_patch, angle, scale, device, "default")
+        x = torch.randint(0, image.shape[2] - test_patch_transformed.shape[2], (1,), device=device).item()
+        y = torch.randint(0, image.shape[3] - test_patch_transformed.shape[3], (1,), device=device).item()
+        patched_image = patch.apply_patch_to_image(image, test_patch_transformed, x, y)
+
+        # imshow
+        np_patched_image = patched_image.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0
+        np_patched_image = np_patched_image.astype(np.uint8)
+        np_patched_image = cv.cvtColor(np_patched_image, cv.COLOR_RGB2BGR)
+        cv.imshow("patched_image", np_patched_image)
+        cv.waitKey(1)
+
+        results = model(patched_image, verbose=False)
+        top1_class = results[0].probs.top1
+        total_length += 1
+        if top1_class == 859:
+            results_correct += 1
+        print(f"Current correct rate: {results_correct / total_length * 100:.2f}% Current Images: {total_length}")
+```
+- After creating the patch, the same preprocessing process was applied, and tests were conducted on 99,999 images of the Imagenet Dataset test images.
+    - Orange Patch(80 Pixel)
+        - Attack success rate: Classified 89.40% of images as Orange.
+                  
+    ![output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/5d2fa52f-e5b0-4f5e-8571-ec95324ccbf7)
+    
+    - Toaster Patch(64 Pixel)
+        - Attack success rate: Classified 72.98% of images as Orange.
+
+    ![ezgif-1-2167c065ae](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/620fd696-e602-4397-a958-3bbdda43b311)
 
 ## Real-world Application
+
+**The following process can be done directly by running yolo_cls_viewer.py on videos taken by printing learned patches.**
+
+```python
+from utils import prediction_chart
+from ultralytics import YOLO
+import cv2 as cv
+import torch
+import os
+
+# device 설정
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# YOLOv8n-cls 모델 로드
+model = YOLO('../yolov8s-cls.pt').to(device)
+
+# 입력 동영상 폴더 경로
+input_video_folder = "video"
+
+# 출력 동영상 폴더 경로
+output_video_folder = os.path.join(input_video_folder, 'output')
+
+# 출력 폴더가 존재하지 않으면 생성
+if not os.path.exists(output_video_folder):
+    os.makedirs(output_video_folder)
+
+# 이미지 사이즈
+image_size = (640, 640)
+tensor_image_size = (224, 224)
+
+# 입력 동영상 폴더 내의 모든 동영상 파일 처리
+for filename in os.listdir(input_video_folder):
+    if filename.endswith('.mp4') or filename.endswith('.avi') or filename.endswith('.mov') or filename.endswith('.MOV'):
+        input_video_path = os.path.join(input_video_folder, filename)
+        output_video_path = os.path.join(output_video_folder, f"{os.path.splitext(filename)[0]}_output.avi")
+
+        # 동영상 파일 열기
+        cap = cv.VideoCapture(input_video_path)
+
+        # 동영상 파일이 열려있는지 확인
+        if not cap.isOpened():
+            print(f"Error: Could not open video {filename}.")
+            continue
+
+        # 동영상 속성 확인
+        fps = int(cap.get(cv.CAP_PROP_FPS))
+        frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+
+        # 동영상 파일 저장
+        fourcc = cv.VideoWriter_fourcc(*'XVID')
+        out = cv.VideoWriter(output_video_path, fourcc, fps, (image_size[0] * 2, image_size[1]))
+
+        # 동영상 프레임 읽기
+        while cap.isOpened():
+            ret, frame = cap.read()
+
+            if not ret:
+                break
+
+            # 이미지 크기 조정
+            frame = cv.resize(frame, image_size)
+
+            tensor_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            tensor_frame = cv.resize(tensor_frame, tensor_image_size)
+            tensor_frame = torch.tensor(tensor_frame).float().permute(2, 0, 1).unsqueeze(0).to(device) / 255.0
+
+            # YOLOv8n-cls 모델 추론
+            results = model(tensor_frame)
+
+            # 상위 5개의 예측 클래스와 해당 확률을 추출
+            probs = results[0].probs  # 확률 추출
+            top5_indices = probs.top5  # 상위 5개의 인덱스
+            top5_probs = probs.top5conf.to('cpu').numpy()  # 상위 5개의 확률
+            top5_classes = [model.names[i] for i in top5_indices]  # 상위 5개의 클래스 이름
+
+            # 예측 차트 생성
+            chart_image = prediction_chart(top5_classes, top5_probs)
+
+            # 차트 이미지 크기 조정 (프레임과 동일하게)
+            chart_image = cv.resize(chart_image, image_size)
+
+            # 이미지 결합
+            combined_image = cv.hconcat([frame, chart_image])
+
+            # 동영상 파일에 프레임 추가
+            out.write(combined_image)
+
+            # 실시간으로 보여주기
+            cv.imshow('Combined Frame', combined_image)
+
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        # 동영상 파일 닫기
+        cap.release()
+        out.release()
+        cv.destroyAllWindows()
+
+print('동영상 처리 완료')
+```
+
 To prove that the adversarial patch created based on the paper is effective in the real world and robust to scale and distortion, patches trained to be recognized as Orange were printed in various sizes and tested.
+
 ![IMG_5999_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/b45cb7ce-f876-4130-8d1f-c23f74773378)
+
 ![IMG_5992_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/db62f264-8496-4413-ad2c-6b96b027d633)
+
 ![1234](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/044be286-0700-40a5-8630-09a81a5e0b81)
 
-- The model recognized objects with attached patches as 'Orange' with high probability when patches printed in various sizes and angles were attached to actual objects. This shows that adversarial patches are effective not only in digital environments but also in real environments.
-- These experimental results indicate that adversarial patches can pose a threat in the real world. Developing robustness and defense techniques against such adversarial examples is considered important.
-
+- After testing by attaching patches printed at various sizes and angles to real objects, the model recognized the patched objects as "Orange" with high probability. This demonstrates that adversarial patches are effective not only in digital environments but also in real-world environments.
+- The experimental results indicate that maliciously generated adversarial patches can also pose a threat to the real world.
+- In this example, experiments were conducted to simply recognize it as Orange, but if traffic signs are not detected or misrecognized, serious consequences may occur.
+- The development of robustness and defense techniques for these adversarial examples is likely to be important.
 
 ## How to execute
 - Create Adversarial Patches: Run main.py

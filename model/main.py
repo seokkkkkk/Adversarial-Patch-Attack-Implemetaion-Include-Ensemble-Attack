@@ -62,11 +62,6 @@ def main():
     # 최종 패치 저장
     save_patch(best_patch, "final_patch", patch_save_path)
 
-    # 저장한 패치와 best_patch 비교
-    patch = cv.imread("patch/final_patch.png")
-    diff = cv.subtract(patch, best_patch.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0)
-    cv.imshow("diff", diff)
-
     # 최종 패치 imshow
     patch_np = (best_patch.squeeze(0).permute(1, 2, 0).cpu().detach().numpy() * 255.0).astype(np.uint8)
     cv.imshow("final_patch", patch_np)
