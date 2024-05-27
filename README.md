@@ -245,16 +245,16 @@ for images in test_loader:
         print(f"Current correct rate: {results_correct / total_length * 100:.2f}% Current Images: {total_length}")
 ```
 
-- 패치 생성 후 동일한 전처리 과정을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
+- 패치 생성 후 전처리 과정(패치의 스케일은 학습시 0.7~1.2배에서 테스트 시 0.8~1.0배로 변경, 나머지 조건은 동일) 을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
     - Orange Patch(80 Pixel)
         - 공격 성공률 : 이미지 중 89.40%를 Orange로 분류하였습니다.
-        - 이미지의 6.25%(0.7배) ~ 18.37(1.2배)% 면적을 차지하는 패치가 적대적 공격을 성공적으로 수행함을 보여줍니다.
+        - 이미지의 8.16%(0.8배) ~ 12.75(1.0배)% 면적을 차지하는 패치가 적대적 공격을 성공적으로 수행함을 보여줍니다.
 
   ![output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/5d2fa52f-e5b0-4f5e-8571-ec95324ccbf7)
 
     - Toaster Patch(64 Pixel)
         - 공격 성공률 : 이미지 중 72.98%를 Toaster로 분류하였습니다.
-        - 이미지의 4%(0.7배) ~ 11.63(1.2배)% 면적을 차지하는 패치가 적대적 공격을 성공적으로 수행함을 보여줍니다.
+        - 이미지의 5.22%(0.8배) ~ 8.16(1.0배)% 면적을 차지하는 패치가 적대적 공격을 성공적으로 수행함을 보여줍니다.
 
   ![ezgif-1-2167c065ae](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/620fd696-e602-4397-a958-3bbdda43b311)
 
