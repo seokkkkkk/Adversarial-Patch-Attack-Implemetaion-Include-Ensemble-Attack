@@ -169,7 +169,7 @@ if optimizer is not None:
 
             - Toaster Patch
 
-          ![16](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/60cd8ce1-7646-41f5-95de-1826c3718a1c)
+              ![16](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/60cd8ce1-7646-41f5-95de-1826c3718a1c)
 
 ## 패치 검증
 
