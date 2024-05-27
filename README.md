@@ -124,7 +124,7 @@ if optimizer is not None:
 - Adam 옵티마이저를 사용하여 패치를 업데이트합니다.
 
 ## 실험
-
+다음의 과정은 main.py를 통해 직접 수행할 수 있습니다.
 - 패치 생성
     - Imagenet Dataset의 train 이미지 중 40,000장을 랜덤으로 선택하여 8:2 비율로 train set과 validation set을 구성하였습니다.
     - Orange Patch의 크기는 80 픽셀, Toaster Patch의 크기는 64 픽셀로 실험하였으며, 이미지를 합성할 때 랜덤으로 0.7배에서 1.2배까지 크기를 조절하고, 0도, 90도, 180도, 270도로 랜덤 회전시켰습니다.
@@ -150,7 +150,7 @@ if optimizer is not None:
                 ![49](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/91308919-8fe7-4384-8f9c-3fed4b0c8b6e)
 
             - Toaster Patch
-            
+다음의 과정은 patch_tester.py에서 직접 수행할 수 있습니다.            
 - 패치 검증
     - 패치 생성 후 동일한 전처리 과정을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
         - Orange Patch(80 Pixel)
@@ -160,7 +160,7 @@ if optimizer is not None:
         
         - Toaster Patch(64 Pixel)
             - 공격 성공률 :
-
+다음의 과정은 학습된 패치를 프린트하여 촬영한 동영상을 yolo_cls_viewer.py를 실행하여 직접 수행할 수 있습니다.
 ## 실제 적용
 논문을 기반으로 프로젝트를 진행하여 생성한 적대적 패치가 현실 세계에서도 유효하며, 스케일 및 왜곡에 대한 강건성이 있음을 증명하기 위해 Orange로 인식되도록 훈련된 패치를 다양한 사이즈로 출력하여 테스트를 진행하였습니다. **(이미지 로드에 시간이 소요됩니다)**
 ![IMG_5999_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/b45cb7ce-f876-4130-8d1f-c23f74773378)
