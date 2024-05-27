@@ -23,11 +23,16 @@ Previous adversarial examples used the Perturbation technique, which attacks ima
 
 - Image classification by the model works by detecting the most "confident" item. Adversarial patches exploit this by creating inputs that appear more "confident" than the actual object, misleading the image classification model.
 
-## Project Introduction
+# Project Introduction
 
-This project is based on the Adversarial Patch paper and implements a single model attack on the Imagenet-pretrained Yolov8 cls model.
+This project is based on the Adversarial Patch paper, implementing key equations into code and performing adversarial attacks on a pre-trained YOLOv8s-cls single model using the ImageNet dataset. Implemented using the Pytorch framework, **the purpose of this project is to evaluate how robust and preventive measures the latest image classification models released in 2023 have against these attacks, six years after the 2017 paper was published.**
 
-Two experiments are designed to classify objects as "orange", "toaster".
+To achieve this, I **wrote code to generate patches that induce input images to be classified into specific classes**, and also wrote code for **testing** and **real-world application testing**. Using the YOLOv8s-cls model and the ImageNet dataset, I trained the patches and ultimately aimed to verify their effectiveness **even in the real world**.
+
+- By applying the concept of **Adversarial Patch introduced in 2017** to the **YOLOv8s-cls model of 2023**, I will show that the **past research is still valid when combined with the latest models**.
+- The purpose is to emphasize how severely this technology can be **exploited** by proving that adversarial patches are **applicable in the real world**.
+
+Upon completion of the project, I conducted two experiments where the model classified images as **Orange** and **Toaster**. Through these experiments, I aim to demonstrate how vulnerable image classification models are to these adversarial attacks.
 
 ## Key Parts of Patch Training
 
