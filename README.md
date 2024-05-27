@@ -24,9 +24,10 @@
 
 ## 프로젝트 소개
 
-이 프로젝트는 적대적 패치 논문을 기반으로, Imagenet으로 pretrained된 Yolov8s의 cls 모델에 대한 단일 모델 공격을 수행하는 코드를 작성한 것입니다.
+이 프로젝트는 Adversarial Patch 논문을 바탕으로 주요 수식을 코드로 표현한 것이며, Imagenet으로 사전 학습된 YOLOv8s-cls 단일 모델에 대한 적대적 공격을 수행하였습니다.
+Pytorch 프레임워크를 사용하여 구현되었으며, 목표는 모델이 입력 이미지를 특정 class로 분류하도록 유도하는 것이며, 현실 세계에서도 유효함을 확인하는 것 입니다.
 
-모델이 객체를 "orange", "toaster"로 분류하도록 두 번의 실험을 진행하였습니다.
+프로젝트 완성 후 모델이 이미지를 "orange", "toaster"로 분류하도록 두 번의 실험을 진행하였습니다.
 
 ## 패치 학습 핵심 부분
 
@@ -161,7 +162,7 @@ if optimizer is not None:
             - 공격 성공률 :
 
 ## 실제 적용
-논문을 기반으로 프로젝트를 진행하여 생성한 적대적 패치가 현실 세계에서도 유효하며, 스케일 및 왜곡에 대한 강건성이 있음을 증명하기 위해 Orange로 인식되도록 훈련된 패치를 다양한 사이즈로 출력하여 테스트를 진행하였습니다.
+논문을 기반으로 프로젝트를 진행하여 생성한 적대적 패치가 현실 세계에서도 유효하며, 스케일 및 왜곡에 대한 강건성이 있음을 증명하기 위해 Orange로 인식되도록 훈련된 패치를 다양한 사이즈로 출력하여 테스트를 진행하였습니다. (이미지 로드에 시간이 소요됩니다)
 ![IMG_5999_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/b45cb7ce-f876-4130-8d1f-c23f74773378)
 ![IMG_5992_output](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/db62f264-8496-4413-ad2c-6b96b027d633)
 ![1234](https://github.com/seokkkkkk/adversarial_patch_implementation/assets/66684504/044be286-0700-40a5-8630-09a81a5e0b81)
