@@ -245,7 +245,7 @@ for images in test_loader:
         print(f"Current correct rate: {results_correct / total_length * 100:.2f}% Current Images: {total_length}")
 ```
 
-- 패치 생성 후 전처리 과정(패치의 스케일은 학습시 0.7~1.2배에서 테스트 시 0.8~1.0배로 변경, 나머지 조건은 동일) 을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
+- 패치 생성 후 전처리 과정(패치의 스케일은 0.8 ~ 1.0배, 나머지 조건은 동일) 을 거쳐 Imagenet Dataset의 test 이미지 99,999장에 대해 테스트를 진행하였습니다
     - Orange Patch(80 Pixel)
         - 공격 성공률 : 이미지 중 89.40%를 Orange로 분류하였습니다.
         - 이미지의 8.16%(0.8배) ~ 12.75(1.0배)% 면적을 차지하는 패치가 적대적 공격을 성공적으로 수행함을 보여줍니다.
