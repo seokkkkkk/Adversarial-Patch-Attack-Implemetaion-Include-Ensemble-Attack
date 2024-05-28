@@ -5,6 +5,7 @@ from utils import plot_training_log, epoch_training_log, batch_training_log
 import numpy as np
 import cv2 as cv
 from torchvision import transforms
+from ultralytics import YOLO
 
 
 def calculate_success(result, goal_class):
@@ -28,7 +29,7 @@ def preprocess_image(image_np):
     return image_tensor
 
 
-def train_step(model, images, target_class, device, patch, optimizer):
+def train_step(model1, model2, model3, model4, images, target_class, device, patch, optimizer):
     train_loss = 0
     train_success = 0
     batch_size = images.size(0)
@@ -48,10 +49,27 @@ def train_step(model, images, target_class, device, patch, optimizer):
         y = torch.randint(0, image.shape[3] - transformed_patch.shape[3], (1,), device=device).item()
         patched_image = apply_patch_to_image(image, transformed_patch, x, y)
 
+        model_num = 0
         # 모델 예측
-        result = model(patched_image, verbose=False)
+        result1 = model1(patched_image, verbose=False)
+        prob = result1[0].probs.data
+        model_num += 1
+        if model2 is not None:
+            result2 = model2(patched_image, verbose=False)
+            prob += result2[0].probs.data
+            model_num += 1
+        if model3 is not None:
+            result3 = model3(patched_image, verbose=False)
+            prob += result3[0].probs.data
+            model_num += 1
+        if model4 is not None:
+            result4 = model4(patched_image, verbose=False)
+            prob += result4[0].probs.data
+            model_num += 1
 
-        log_probs = torch.log(result[0].probs.data)
+        prob = prob / model_num
+
+        log_probs = torch.log(prob)
         target_prob = log_probs.unsqueeze(0)
         loss = torch.nn.functional.nll_loss(target_prob, torch.tensor([target_class], device=device))
         success = calculate_success(target_prob, target_class)
@@ -83,14 +101,14 @@ def train_step(model, images, target_class, device, patch, optimizer):
     return train_loss, train_success
 
 
-def train(model, train_loader, target_class, device, initial_patch, optimizer, epoch, total_epochs):
+def train(model1, model2, model3, model4, train_loader, target_class, device, initial_patch, optimizer, epoch, total_epochs):
     print("[Train]")
     train_loss = 0
     train_success = 0
 
     for batch_idx, images in enumerate(train_loader):
         images = images.to(device)
-        batch_loss, batch_success = train_step(model, images, target_class, device, initial_patch, optimizer)
+        batch_loss, batch_success = train_step(model1, model2, model3, model4, images, target_class, device, initial_patch, optimizer)
         train_loss += batch_loss
         train_success += batch_success
 
@@ -104,14 +122,14 @@ def train(model, train_loader, target_class, device, initial_patch, optimizer, e
     return train_loss, train_success
 
 
-def val(model, val_loader, target_class, device, initial_patch, epoch, total_epochs):
+def val(model1, model2, model3, model4, val_loader, target_class, device, initial_patch, epoch, total_epochs):
     print("[Validation]")
     val_loss = 0
     val_success = 0
 
     for batch_idx, images in enumerate(val_loader):
         images = images.to(device)
-        batch_loss, batch_success = train_step(model, images, target_class, device, initial_patch, None)  # optimizer 없이 수행
+        batch_loss, batch_success = train_step(model1, model2, model3, model4, images, target_class, device, initial_patch, None)  # optimizer 없이 수행
         val_loss += batch_loss
         val_success += batch_success
 
@@ -125,8 +143,13 @@ def val(model, val_loader, target_class, device, initial_patch, epoch, total_epo
     return val_loss, val_success
 
 
-def train_patch(model, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch,
+def train_patch(model1, mode2, model3, model4, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch,
                 optimizer):
+    model1 = model
+    model2 = YOLO("yolov8n-cls.pt").to(device)
+    model3 = YOLO("yolov8m-cls.pt").to(device)
+    model4 = YOLO("yolov8l-cls.pt").to(device)
+
     # 패치 학습
     best_val_loss = float("inf")
     best_val_epoch = 0
@@ -136,10 +159,10 @@ def train_patch(model, train_loader, val_loader, epochs, target_class, device, s
 
     for epoch in range(epochs):
         print(f"{'=' * 20} Epoch {epoch + 1}/{epochs} {'=' * 20}")
-        train_loss, train_success = train(model, train_loader, target_class, device, initial_patch, optimizer, epoch, epochs)
+        train_loss, train_success = train(model1, model2, model3, model4, train_loader, target_class, device, initial_patch, optimizer, epoch, epochs)
 
         with torch.no_grad():
-            val_loss, val_success = val(model, val_loader, target_class, device, initial_patch, epoch, epochs)
+            val_loss, val_success = val(model1, model2, model3, model4, val_loader, target_class, device, initial_patch, epoch, epochs)
 
         print(f"[Epoch] {epoch + 1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Train Success: {train_success:.4f} - Val Success: {val_success:.4f}")
 

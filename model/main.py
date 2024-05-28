@@ -20,12 +20,21 @@ def main():
     print("Device:", device)
 
     # 객체 분류 모델 설정
-    model = YOLO("yolov8s-cls.pt").to(device)
+    model1 = YOLO("yolov8s-cls.pt").to(device)
+    model2 = None
+    model3 = None
+    model4 = None
+
+    # Cross-Attack 모델 설정
+    # 단일 공격 시 주석 처리
+    # model2 = YOLO("yolov8n-cls.pt").to(device)
+    # model3 = YOLO("yolov8m-cls.pt").to(device)
+    # model4 = YOLO("yolov8l-cls.pt").to(device)
 
     print("Model 로딩 완료")
 
     # 초기 패치 및 학습 관련 설정
-    patch_size = 50
+    patch_size = 80
     patch_shape = "default"
     custom_patch_path = None # 필요한 경우 "path/to/custom/patch.png"
     patch_save_path = "patch/"
@@ -35,7 +44,7 @@ def main():
     optimizer = torch.optim.Adam([initial_patch], lr=learning_rate)
 
     epochs = 1000  # 학습 횟수 설정
-    target_class = 859 # 공격 target class 설정
+    target_class = 429 # 공격 target class 설정
     stop_threshold = 20
 
     save_patch(initial_patch, "initial_patch", patch_save_path)
@@ -43,7 +52,7 @@ def main():
     # 데이터셋 분할
     batch_size = 300  # 배치 사이즈 설정을 1로 변경
     max_images = 40000  # 학습할 최대 이미지 수
-    images_path = "images/path/to/attack"  # 공격할 대상 이미지 경로
+    images_path = "C:\\Users\\HOME\\Desktop\\imagenet\\ILSVRC\\Data\\CLS-LOC\\train" # 공격할 대상 이미지 경로
     train_images, val_images = split_dataset(return_path_to_images(images_path), max_images)
 
     print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")
@@ -55,7 +64,7 @@ def main():
     print("학습 시작")
 
     # 패치 생성
-    best_patch = train_patch(model, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch, optimizer)
+    best_patch = train_patch(model1, model2, model3, model4, train_loader, val_loader, epochs, target_class, device, stop_threshold, initial_patch, optimizer)
 
     print("학습 완료")
 
