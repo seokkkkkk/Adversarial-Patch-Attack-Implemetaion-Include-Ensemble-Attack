@@ -379,13 +379,13 @@ print('동영상 처리 완료')
 
 ## 범용 적대적 패치 (Universal Adversarial Patch)
 
-**main.py의 model2, model3, model4를 추가하여 여러 모델에서 범용적으로 작용하는 패치를 생성할 수 있습니다**'
+**main.py의 model2, model3, model4를 추가하여 여러 모델에서 범용적으로 작용하는 패치를 생성할 수 있습니다**
 
 하나의 모델에 국한된 패치가 아닌, 범용적으로 작용할 수 있는 패치를 생성해보기 위해 학습 과정에서 손실 함수를 구하는 과정에 YOLOv8s-cls, YOLOv8n-cls, YOLOv8m-cls, YOLOv8l-cls의 네 가지 모델을 사용하였으며, 야구공으로 분류되도록 유도하는 80픽셀 사이즈의 패치를 생성하였습니다.
 
 ![image](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/627a990c-4ff8-4bc2-b946-e35891c499e8)
 
-범용적으로 패치를 생성하는 것이 어려울 것으로 예상하였으나, 40000장의 이미지로 10 epochs 동 수행한 훈련 및 검증 과정의 성공률이 매우 높았습니다.
+범용적으로 패치를 생성하는 것이 어려울 것으로 예상하였으나, 40000장의 이미지로 10 epochs 동안 수행한 훈련 및 검증 과정의 성공률이 매우 높았습니다.
 
 - 페치 생성 과정
     ![image](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/7576298f-f5f3-4d37-a417-f55261d40cd1)
@@ -423,8 +423,6 @@ print('동영상 처리 완료')
     - input_video_folder에 존재하는 동영상에 대해서 Top5 예측 차트를 포함한 동영상을 생성합니다.
 
 ## 후속 목표
-- YOLO 모델 및 다양한 모델을 Cross Training하여, 다양한 모델에 범용적으로 사용될 수 있는 패치 테스트
-    - 다양한 모델을 교차 훈련하여, 여러 모델에 대해 효과적으로 작동하는 범용적인 적대적 패치를 생성 및 테스트. 모델 간의 상호 학습과 검증을 통해 패치의 범용성 평가.
 - 적대적 패치를 방어할 수 있는 기법 탐구 및 실험
 
 ## **실험 환경**
