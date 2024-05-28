@@ -379,7 +379,8 @@ print('동영상 처리 완료')
 
 ## 범용 적대적 패치 (Universal Adversarial Patch)
 
-**main.py의 model2, model3, model4를 추가하여 여러 모델에서 범용적으로 작용하는 패치를 생성할 수 있습니다**
+**main.py의 model2, model3, model4를 추가하여 여러 모델에서 범용적으로 작용하는 패치를 생성할 수 있습니다**'
+
 하나의 모델에 국한된 패치가 아닌, 범용적으로 작용할 수 있는 패치를 생성해보기 위해 학습 과정에서 손실 함수를 구하는 과정에 YOLOv8s-cls, YOLOv8n-cls, YOLOv8m-cls, YOLOv8l-cls의 네 가지 모델을 사용하였으며, 야구공으로 분류되도록 유도하는 80픽셀 사이즈의 패치를 생성하였습니다.
 
 ![image](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/627a990c-4ff8-4bc2-b946-e35891c499e8)
