@@ -388,9 +388,12 @@ print('동영상 처리 완료')
 범용적으로 패치를 생성하는 것이 어려울 것으로 예상하였으나, 40000장의 이미지로 10 epochs 동안 수행한 훈련 및 검증 과정의 성공률이 매우 높았습니다.
 
 - 페치 생성 과정
-    ![image](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/7576298f-f5f3-4d37-a417-f55261d40cd1)
+  
+    ![ezgif-1-3f1c2d2c37](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/75313cc8-6146-495c-83ca-e3bb32329ff3)
+
 
 - 완성된 패치
+  
     ![best_patch_9_0 0468](https://github.com/seokkkkkk/Adversarial-Patch-Attack-Implemetaion-YOLOv8/assets/66684504/249b7b33-825b-4b1d-91cc-dd305efe3e75)
 
 - 4가지 모델로 생성된 패치가 범용적으로 사용될 수 있음을 증명하기 위해, **학습에 사용되지 않은 VGG 16 모델**로 검증하였습니다.
